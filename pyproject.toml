@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "example_package"
+readme = "README.md"
+dynamic = ["version"]
+requires-python = '>=3.8.1'
+license = "MIT"
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "tqdm"
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff", # If a linter and formatter is wanted. It standardizes the code style.
+          # Run `ruff format` and `ruff check --fix` to format and lint the code.
+          # There are also plugins for the usual editors.
+]
+
+[tool.hatch.build]
+include = ["example_package/*"]
+
+[tool.hatch.version]
+source = "vcs"
+
+
+# automatically create a version number, based on the latest git commit and date, if not
+# uploaded to PyPI. If uploaded to PyPI, the version number is taken from the latest
+# git tag. The version number is written to the _version.py file in the package.
+[tool.hatch.build.hooks.vcs]
+version-file = "example_package/_version.py"
+
+
+[tool.ruff.lint]
+ignore = ["E721", "E731"] # ignore type comparisons and lambdas rewrites
+select = ["E", "F", "I001"]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore `F401` (unused imports) in all `__init__.py` files.
+"__init__.py" = ["F401"]
