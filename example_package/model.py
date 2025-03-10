@@ -28,19 +28,16 @@ class BoltzmannMachine(nn.Module):
         # Initialize adjacency matrix
         adj = np.zeros((2*n + m, 2*n + m))
     
-        # Initialize placement map
-        placeMap = np.zeros((3, n), dtype=int)
-    
         # Connections for V1 (first n units)
         for i in range(n):
             adj[i, :] = 1  # Connect to all units
-            adj[i, i] = 1  # No self-connection
+            adj[i, i] = 0  # No self-connection
             adj[i, n:n + n] = 0  # No connections to V2
     
         # Connections for V2 (next n units)
         for i in range(n, 2 * n):
             adj[i, :] = 1  # Connect to all units
-            adj[i, i] = 1  # No self-connection
+            adj[i, i] = 0  # No self-connection
             adj[i, 0:n] = 0  # No connections to V1
     
         # Connections for hidden units (last m units)
@@ -53,36 +50,6 @@ class BoltzmannMachine(nn.Module):
 
     def forward(self, v, clamped, T):
         return self.GoToEquilibriumState(v, clamped, T)
-
-    def TrainBatch(self, data, epochs, learningRate,noise_levels, plot_intervals=[]):
-        optimizer = optim.SGD(self.parameters(), lr=learningRate)
-        nData = data.size(0)
-    
-        for iep in range(epochs):
-            optimizer.zero_grad()
-            pClampedAvg = torch.zeros(self.n, self.n)
-            pFreeAvg = torch.zeros(self.n, self.n)
-    
-            for i in range(nData):
-                NoisyV = self.AddNoise(data[i],noise_levels)
-                vNoisy = torch.clone(NoisyV)
-
-                clampedUnits = torch.cat((torch.ones(self.nv), torch.zeros(self.nh)))
-                vClamped, hClamped = self.GoToEquilibriumState(vNoisy, clampedUnits, 10)
-                pClampedAvg += self.CollectStatistics(vClamped, hClamped, clampedUnits, 10, 10)
-    
-                vFree, hFree = self.GoToEquilibriumState(torch.zeros(self.nv), torch.zeros(self.n), 10)
-                pFreeAvg += self.CollectStatistics(vFree, hFree, torch.zeros(self.n), 10, 10)
-    
-            pClampedAvg /= nData
-            pFreeAvg /= nData
-            s = pClampedAvg - pFreeAvg
-    
-            self.w.grad = -s  # Gradient descent
-            optimizer.step()
-            
-            if iep in plot_intervals:
-                self.PlotWeights(iep)
 
     
     def AddNoise(self, v, flip_probabilities):
@@ -126,7 +93,30 @@ class BoltzmannMachine(nn.Module):
                         vh[j] = self.inactiveState
 
         return vh[:self.nv], vh[self.nv:] # Visible + Hidden
+    
+    def training_step(self,optimizer,data,noise_levels,T):
+        nData = len(data)
+        optimizer.zero_grad()
+        pClampedAvg = torch.zeros(self.n, self.n)
+        pFreeAvg = torch.zeros(self.n, self.n)
 
+        for i in range(nData):
+            NoisyV = self.AddNoise(data[i],noise_levels)
+            vNoisy = torch.clone(NoisyV)
+
+            clampedUnits = torch.cat((torch.ones(self.nv), torch.zeros(self.nh)))
+            vClamped, hClamped = self.GoToEquilibriumState(vNoisy, clampedUnits, T)
+            pClampedAvg += self.CollectStatistics(vClamped, hClamped, clampedUnits, 10, T)
+
+            vFree, hFree = self.GoToEquilibriumState(torch.zeros(self.nv), torch.zeros(self.n), T)
+            pFreeAvg += self.CollectStatistics(vFree, hFree, torch.zeros(self.n), 10, T)
+
+        pClampedAvg /= nData
+        pFreeAvg /= nData
+        s = pClampedAvg - pFreeAvg
+
+        self.w.grad = -s  # Gradient descent
+        optimizer.step()
     
     def CollectStatistics(self, v, h, clamped, timeUnits, T):
             vh = torch.cat((v, h))
@@ -142,9 +132,6 @@ class BoltzmannMachine(nn.Module):
                             vh[j] = 1
                         else:
                             vh[j] = self.inactiveState
-    
-                vhBinary = vh.clone()
-                vhBinary[vhBinary == -1] = 0
-                stats += torch.outer(vhBinary, vhBinary)
+                stats += torch.outer(vh, vh)
     
             return stats / timeUnits
