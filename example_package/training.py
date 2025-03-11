@@ -1,9 +1,8 @@
 import torch
 from torch import optim
 import matplotlib as plt
-import example_package
 
-def TrainBatch(model:example_package.BoltzmannMachine, data, epochs, learningRate,noise_levels,steps_statistics,
+def TrainBatch(model, data, epochs, learningRate,noise_levels,steps_statistics,
                annealing_scheme:float|torch.Tensor,n_steps=None):
         """
         annealing_scheme: temperature, or annealing scheme

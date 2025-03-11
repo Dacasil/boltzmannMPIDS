@@ -4,16 +4,17 @@ import torch.optim as optim
 import numpy as np
 
 class BoltzmannMachine(nn.Module):
-    def __init__(self, nv, nh, mode='bipolar'):
+    def __init__(self, nv, nh,bias=False, mode='bipolar'):
         super(BoltzmannMachine, self).__init__()
         self.nv = nv  # Number of visible units
         self.nh = nh  # Number of hidden units
-        self.n = nv + nh  # Total number of units
+        self.bias = bias
+        self.n = nv + nh + int(bias)  # Total number of units
         self.w = nn.Parameter(torch.zeros(self.n, self.n))  # Full weight matrix
         self.inactiveState = -1 if mode == 'bipolar' else 0  # Inactive state
     
         # Create a connectivity mask
-        self.set_backhook(self.CreateDecoderAdjacencyMat(self.nv//2,self.nh))
+        self.set_backhook(self.CreateDecoderAdjacencyMat(self.nv//2,self.nh,self.bias))
 
     def set_backhook(self,connectivity):
         def get_grad_filter(fltr):
@@ -24,9 +25,10 @@ class BoltzmannMachine(nn.Module):
             return backhook
         self.w.register_hook(get_grad_filter(connectivity))
 
-    def CreateDecoderAdjacencyMat(self, n, m):
+    def CreateDecoderAdjacencyMat(self, n, m,bias):
         # Initialize adjacency matrix
-        adj = np.zeros((2*n + m, 2*n + m))
+        total_length = 2*n + m + int(bias)
+        adj = np.zeros((total_length, total_length))
     
         # Connections for V1 (first n units)
         for i in range(n):
@@ -44,6 +46,11 @@ class BoltzmannMachine(nn.Module):
         for i in range(2 * n, 2 * n + m):
             adj[i, :] = 1  # Connect to all units
             adj[i, 2 * n:2 * n + m] = 0  # No connections among hidden units
+        
+        #connect bias to all
+        if self.bias:
+            adj[total_length-1,:] = 1
+            adj[:,total_length-1] = 1
     
         return torch.tensor(adj, dtype=torch.float32)
 
@@ -85,18 +92,19 @@ class BoltzmannMachine(nn.Module):
         if n_steps is not None and isinstance(annealing_scheme,(float,int)):
             annealing_scheme = annealing_scheme * torch.ones(n_steps)
         # Create the initial state of the visible and hidden units
-        vhInit = torch.cat((initial_state, torch.zeros(self.nh))) 
-        
+        initial_state = torch.cat((initial_state, torch.zeros(self.nh))) 
         # Generate a random state for all units
-        vhRandom = torch.randint(2, size=(self.n,)) * 2 - 1 if self.inactiveState == -1 else torch.randint(2, size=(self.n,))
-
-        # Combine the clamped units (fixed to their initial values) and the free units (randomly initialized)
-        total_state = clamping_degree * vhInit + (1 - clamping_degree) * vhRandom
+        random_state = torch.randint(2, size=(self.n,)) * 2 - 1 if self.inactiveState == -1 else torch.randint(2, size=(self.n,))
+        if self.bias and len(initial_state==(self.n-1)): #append bias to state if not already there
+            initial_state = self.append_bias(initial_state)
+            clamping_degree = self.append_bias(clamping_degree)
+        #Combine the clamped units (fixed to their initial values) and the free units (randomly initialized)
+        total_state = clamping_degree * initial_state + (1 - clamping_degree) * random_state
 
         for temperature in annealing_scheme:  # Do one forward for each specified temperature
             self.forward(total_state,clamping_degree,T=temperature)
-
-        return total_state[:self.nv], total_state[self.nv:] # Visible + Hidden
+        final_step = self.n-1 if self.bias else self.n
+        return total_state[:self.nv], total_state[self.nv:final_step] # Visible + Hidden
     
     def training_step(self,optimizer,data,noise_levels,steps_statistics,annealing_scheme,n_steps):
         nData = len(data)
@@ -111,14 +119,15 @@ class BoltzmannMachine(nn.Module):
             clampedUnits = torch.cat((torch.ones(self.nv), torch.zeros(self.nh)))
 
             final_T = annealing_scheme[-1]
+            # have it be 10 here, 11 inside the subfunctions
             vClamped, hClamped = self.GoToEquilibriumState(vNoisy, clampedUnits,
                                                             annealing_scheme,n_steps)
             pClampedAvg += self.CollectStatistics(vClamped, hClamped, clampedUnits, steps_statistics, final_T)
 
-            vFree, hFree = self.GoToEquilibriumState(torch.zeros(self.nv), torch.zeros(self.n),
+            vFree, hFree = self.GoToEquilibriumState(torch.zeros(self.nv), torch.zeros(self.n-int(self.bias)),
                                                       annealing_scheme, n_steps)
             final_T = annealing_scheme[-1]
-            pFreeAvg += self.CollectStatistics(vFree, hFree, torch.zeros(self.n), steps_statistics, final_T)
+            pFreeAvg += self.CollectStatistics(vFree, hFree, torch.zeros(self.n-int(self.bias)), steps_statistics, final_T)
 
         pClampedAvg /= nData
         pFreeAvg /= nData
@@ -126,13 +135,43 @@ class BoltzmannMachine(nn.Module):
 
         self.w.grad = -s  # Gradient descent
         optimizer.step()
+
+    def append_bias(self,state):
+        y = torch.cat((state,torch.tensor([1])))
+        return y
     
     def CollectStatistics(self, v, h, clamped, timeUnits, T):
-            vh = torch.cat((v, h))
+            clamped = self.append_bias(clamped)
+            total_state = torch.cat((v, h))
+            if self.bias:
+                total_state = torch.cat((total_state,torch.Tensor([1])))
             stats = torch.zeros(self.n, self.n)
     
             for _ in range(timeUnits):
-                self.forward(vh,clamped, T)
-                stats += torch.outer(vh, vh)
+                self.forward(total_state,clamped, T)
+                stats += torch.outer(total_state, total_state)
     
             return stats / timeUnits
+    
+# def main():
+#     n_visible = 4
+#     n_hidden = 2
+#     # Define the training set, there are n_visible possible patterns
+#     v_active = torch.tensor([[1, 0, 0, 0, 1, 0, 0, 0],
+#                             [0, 1, 0, 0, 0, 1, 0, 0],
+#                             [0, 0, 1, 0, 0, 0, 1, 0],
+#                             [0, 0, 0, 1, 0, 0, 0, 1]], dtype=torch.float32)
+#     dataset = -torch.ones((n_visible,2*n_visible))+2*v_active
+#     #noise_levels = [0.05,0.15]
+#     epochs = 50
+#     learning_rate = 2
+#     noise_levels = [0.05,0.15] # [p_flip_to_zero,p_flip_to_one]
+#     annealing_scheme = torch.Tensor([20,20,15,15,12,12,10,10,10,10])
+#     steps_statistics = 10
+#     # Make an object from the model and train it
+#     model = BoltzmannMachine(2*n_visible, n_hidden,True)
+#     training.TrainBatch(model,dataset, epochs, learning_rate,noise_levels,steps_statistics,annealing_scheme)
+#     print('finished training')
+
+# if __name__ == "__main__":
+#     main()

@@ -3,8 +3,8 @@
 from importlib import metadata as importlib_metadata
 
 from .hello_world import hello_world
-from .model import BoltzmannMachine
 from .training import TrainBatch
+from .model import BoltzmannMachine
 def _get_version():
     try:
         return importlib_metadata.version(__name__)
