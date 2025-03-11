@@ -12,9 +12,9 @@ class BoltzmannMachine(nn.Module):
         self.n = nv + nh + int(bias)  # Total number of units
         self.w = nn.Parameter(torch.zeros(self.n, self.n))  # Full weight matrix
         self.inactiveState = -1 if mode == 'bipolar' else 0  # Inactive state
-    
+        self.adjacancy_matrix = self.CreateDecoderAdjacencyMat(self.nv//2,self.nh,self.bias)
         # Create a connectivity mask
-        self.set_backhook(self.CreateDecoderAdjacencyMat(self.nv//2,self.nh,self.bias))
+        self.set_backhook(self.adjacancy_matrix)
 
     def set_backhook(self,connectivity):
         def get_grad_filter(fltr):
@@ -135,6 +135,8 @@ class BoltzmannMachine(nn.Module):
 
         self.w.grad = -s  # Gradient descent
         optimizer.step()
+        with torch.no_grad():
+            self.w *= self.adjacancy_matrix.to(self.w.device)
 
     def append_bias(self,state):
         y = torch.cat((state,torch.tensor([1])))
