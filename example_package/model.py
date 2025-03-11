@@ -48,13 +48,21 @@ class BoltzmannMachine(nn.Module):
         return torch.tensor(adj, dtype=torch.float32)
 
 
-    def forward(self, v, clamped, T):
-        return self.GoToEquilibriumState(v, clamped, T)
+    def forward(self,initial_state, clamping_degree, T):
+        perm = torch.randperm(self.n)
+        for j in perm:
+            if clamping_degree[j] == 0:
+                sum_input = torch.dot(self.w[j], initial_state)
+                p = 1 / (1 + torch.exp(-sum_input / T))
+                if torch.rand(1) <= p:
+                    initial_state[j] = 1
+                else:
+                    initial_state[j] = self.inactiveState
 
     
     def AddNoise(self, v, flip_probabilities):
         """
-        flip_probabilities: (p_flip_to_-1,p_flip_to_one)
+        flip_probabilities: (p_flip_zeros,p_flip_ones)
         """
         v_dash = torch.clone(v)
         for i in range(self.nv):
@@ -66,35 +74,31 @@ class BoltzmannMachine(nn.Module):
                         v_dash[i] = 1
         return v_dash
 
-    def GoToEquilibriumState(self, v:torch.Tensor, clamping_degree:torch.Tensor, T:float):
+    def GoToEquilibriumState(self, initial_state:torch.Tensor, clamping_degree:torch.Tensor,
+                              annealing_scheme:torch.Tensor|float,n_steps:int=None):
         """
+        initial_state: concatted vector with shape (n_visible+n_hidden)
         v: state vector (not batched)
-        clamping_degree: vector with degree of clamping, interpolates
+        clamping_degree: vector with degree of clamping, interpolates between initial_state and a
         T: temperature
         """
+        if n_steps is not None and isinstance(annealing_scheme,(float,int)):
+            annealing_scheme = annealing_scheme * torch.ones(n_steps)
         # Create the initial state of the visible and hidden units
-        vhInit = torch.cat((v, torch.zeros(self.nh))) 
+        vhInit = torch.cat((initial_state, torch.zeros(self.nh))) 
         
         # Generate a random state for all units
         vhRandom = torch.randint(2, size=(self.n,)) * 2 - 1 if self.inactiveState == -1 else torch.randint(2, size=(self.n,))
 
         # Combine the clamped units (fixed to their initial values) and the free units (randomly initialized)
-        vh = clamping_degree * vhInit + (1 - clamping_degree) * vhRandom
+        total_state = clamping_degree * vhInit + (1 - clamping_degree) * vhRandom
 
-        for _ in range(100):  # Fixed number of steps
-            perm = torch.randperm(self.n) # Generates a random order for updating the units
-            for j in perm:
-                if clamping_degree[j] == 0:
-                    sum_input = torch.dot(self.w[j], vh)
-                    p = 1 / (1 + torch.exp(-sum_input / T))
-                    if torch.rand(1) <= p:
-                        vh[j] = 1
-                    else:
-                        vh[j] = self.inactiveState
+        for temperature in annealing_scheme:  # Do one forward for each specified temperature
+            self.forward(total_state,clamping_degree,T=temperature)
 
-        return vh[:self.nv], vh[self.nv:] # Visible + Hidden
+        return total_state[:self.nv], total_state[self.nv:] # Visible + Hidden
     
-    def training_step(self,optimizer,data,noise_levels,T):
+    def training_step(self,optimizer,data,noise_levels,steps_statistics,annealing_scheme,n_steps):
         nData = len(data)
         optimizer.zero_grad()
         pClampedAvg = torch.zeros(self.n, self.n)
@@ -105,11 +109,16 @@ class BoltzmannMachine(nn.Module):
             vNoisy = torch.clone(NoisyV)
 
             clampedUnits = torch.cat((torch.ones(self.nv), torch.zeros(self.nh)))
-            vClamped, hClamped = self.GoToEquilibriumState(vNoisy, clampedUnits, T)
-            pClampedAvg += self.CollectStatistics(vClamped, hClamped, clampedUnits, 10, T)
 
-            vFree, hFree = self.GoToEquilibriumState(torch.zeros(self.nv), torch.zeros(self.n), T)
-            pFreeAvg += self.CollectStatistics(vFree, hFree, torch.zeros(self.n), 10, T)
+            final_T = annealing_scheme[-1]
+            vClamped, hClamped = self.GoToEquilibriumState(vNoisy, clampedUnits,
+                                                            annealing_scheme,n_steps)
+            pClampedAvg += self.CollectStatistics(vClamped, hClamped, clampedUnits, steps_statistics, final_T)
+
+            vFree, hFree = self.GoToEquilibriumState(torch.zeros(self.nv), torch.zeros(self.n),
+                                                      annealing_scheme, n_steps)
+            final_T = annealing_scheme[-1]
+            pFreeAvg += self.CollectStatistics(vFree, hFree, torch.zeros(self.n), steps_statistics, final_T)
 
         pClampedAvg /= nData
         pFreeAvg /= nData
@@ -123,15 +132,7 @@ class BoltzmannMachine(nn.Module):
             stats = torch.zeros(self.n, self.n)
     
             for _ in range(timeUnits):
-                perm = torch.randperm(self.n)
-                for j in perm:
-                    if clamped[j] == 0:
-                        sum_input = torch.dot(self.w[j], vh)
-                        p = 1 / (1 + torch.exp(-sum_input / T))
-                        if torch.rand(1) <= p:
-                            vh[j] = 1
-                        else:
-                            vh[j] = self.inactiveState
+                self.forward(vh,clamped, T)
                 stats += torch.outer(vh, vh)
     
             return stats / timeUnits
