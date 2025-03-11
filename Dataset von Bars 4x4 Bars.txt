@@ -1,0 +1,6 @@
+Dataset von Bars 4x4 Bars
+Noise und random kreiren mit 1 und -1
+
+Feature Positionen ausschließen 
+
+4x4 
