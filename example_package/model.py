@@ -210,6 +210,9 @@ def AdjMat_V1V2_inlayer(n, m, bias):
 
 
 def AdjMat_V1V2_no_inlayer(n, m, bias):
+    """
+    n: length of V1
+    """
     # Initialize adjacency matrix
     total_length = 2 * n + m + int(bias)
     adj = np.zeros((total_length, total_length))
