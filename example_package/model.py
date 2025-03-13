@@ -124,12 +124,15 @@ class BoltzmannMachine(nn.Module):
                 )  # Clamp bias unit
 
             final_T = annealing_scheme[-1]
-            vClamped, hClamped = self.GoToEquilibriumState(
-                vNoisy, clampedUnits, annealing_scheme, n_steps
-            )
-            pClampedAvg += self.CollectStatistics(
-                vClamped, hClamped, clampedUnits, steps_statistics, final_T
-            )
+            n_reps = 2 if double_clamped else 1
+            for _ in range(n_reps):
+                vClamped, hClamped = self.GoToEquilibriumState(
+                    vNoisy, clampedUnits, annealing_scheme, n_steps
+                )
+                pClampedAvg += self.CollectStatistics(
+                    vClamped, hClamped, clampedUnits, steps_statistics, final_T
+                )
+            pClampedAvg = pClampedAvg/n_reps
 
             vFree, hFree = self.GoToEquilibriumState(
                 torch.zeros(self.nv),
