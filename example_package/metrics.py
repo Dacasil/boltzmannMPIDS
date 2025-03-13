@@ -2,7 +2,6 @@ import itertools
 
 
 def hamming_distance(vectors):
-    vectors = vectors.T
     # Generate all unique pairs of vectors
     pairs = itertools.combinations(vectors, 2)
     distances = []
@@ -15,3 +14,11 @@ def hamming_distance(vectors):
     min_distance = min(distances)
 
     return distances, mean_distance, min_distance
+
+def get_encoding_vectors(network):
+    nv1=network.nv//2
+    y = network.w.detach().numpy()
+    final_index = -1 if network.bias else len(y)
+    encoding_v1 = y[2*nv1:final_index,:nv1]
+    encoding_v2 = y[2*nv1:final_index,nv1:2*nv1]
+    return encoding_v1, encoding_v2
