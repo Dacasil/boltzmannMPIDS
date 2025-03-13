@@ -4,23 +4,17 @@ import matplotlib as plt
 from tqdm import tqdm
 
 
-def TrainBatch(
-    model,
-    data,
-    epochs,
-    learningRate,
-    noise_levels,
-    steps_statistics,
-    annealing_scheme: float | torch.Tensor,
-    n_steps=None,
-):
-    """
-    annealing_scheme: temperature, or annealing scheme
-    n_steps: number of steps to equilibrium, alternative to specifying a scheme
-    """
-    optimizer = optim.SGD(model.parameters(), lr=learningRate)
+def TrainBatch(model, data, epochs, learningRate,noise_levels,steps_statistics,
+               annealing_scheme:float|torch.Tensor,training_params=None,n_steps=None):
+        """
+        annealing_scheme: temperature, or annealing scheme
+        n_steps: number of steps to equilibrium, alternative to specifying a scheme 
+        """
+        optimizer = optim.SGD(model.parameters(), lr=learningRate)
+    
+        for iep in tqdm(range(epochs)):
+            model.training_step(optimizer,data,noise_levels,steps_statistics,annealing_scheme,n_steps,
+                            **training_params )
+            
+            
 
-    for iep in tqdm(range(epochs)):
-        model.training_step(
-            optimizer, data, noise_levels, steps_statistics, annealing_scheme, n_steps
-        )
