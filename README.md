@@ -26,10 +26,10 @@ The Boltzmann Machine (BM) is an energy-based stochastic model with recurrent co
 ### The Encoder Task  
 The 4-2-4 encoder task involves two visible layers (*V1* and *V2*) connected via a hidden layer (*H*), with the goal of ensuring \( V1 = V2 \). The architecture enforces sparse activation, where only one neuron is active per region. This setup mimics efficient communication between brain regions through binary encoding. The structure is visualized in the schematic below (`Figure 1`), highlighting recurrent connections within visible layers and symmetric encodings to the hidden layer.
 
-<figure>
-  <img src="plots&graphics/nodes_model.png" alt="4-2-4 Model" width="400"/>
-  <figcaption>Figure 1: Wake-sleep training phases</figcaption>
-</figure>
+<p align="center">
+  <img src="plots&graphics/nodes_model.png" alt="4-2-4 Model" width="400">
+</p>
+<p align="center"><em>Figure 1: Wake-sleep training phases</em></p>
 
 ---
 
@@ -55,28 +55,34 @@ The implementation of the 4-2-4 encoder uses recursive connectivity plots (`Figu
 
 Binary encodings are analyzed using Hamming distances, as shown in `Figure 4`. Four distinct encodings emerge: `(11)`, `(10)`, `(01)`, and `(00)` (`Figure 5`). While the theoretical minimum Hamming distance is 1, empirical results (from 50 samples) show imperfect separation due to the stochastic nature of BMs and limited training epochs.
 
-<figure>
-  <img src="plots&graphics/binary_encodings_original" alt="4-2-4 Binary Encodings " width="400"/>
-  <figcaption>Figure 4: Encoding distances</figcaption>
-</figure>
+<p align="center">
+  <img src="plots&graphics/binary_encodings_original" alt="4-2-4 Binary Encodings" width="400">
+</p>
+<p align="center"><em>Figure 4: Encoding distances</em></p>
 
-<figure>
-  <img src="plots&graphics/encodings_orig.png" alt="4-2-4 Encodings " width="400"/>
-  <figcaption>Figure 5: Four different encodings</figcaption>
-</figure>
+<br/>
+
+<p align="center">
+  <img src="plots&graphics/encodings_orig.png" alt="4-2-4 Encodings" width="400">
+</p>
+<p align="center"><em>Figure 5: Four different encodings</em></p>
+
 
 ### Symmetry in Communication  
 Symmetry between *V1* and *V2* is quantified using cosine similarity over training epochs (`Figure 6 & 7`). Recurrent connections within visible layers and symmetric encodings to the hidden layer ensure robust communication. This symmetry is critical for stabilizing the network during inference.
 
-<figure>
-  <img src="plots&graphics/similarity_orig.png" alt="4-2-4 simlarities "/>
-  <figcaption>Figure 6: Symmetry behavior over training epochs</figcaption>
-</figure>
+<p align="center">
+  <img src="plots&graphics/similarity_orig.png" alt="4-2-4 similarities" width="400">
+</p>
+<p align="center"><em>Figure 6: Symmetry behavior over training epochs</em></p>
 
-<figure>
-  <img src="plots&graphics/symmetry_model.png" alt="4-2-4 similarities connections " width="400"/>
-  <figcaption>Figure 7: Symmetry Connections</figcaption>
-</figure>
+<br/>
+
+<p align="center">
+  <img src="plots&graphics/symmetry_model.png" alt="4-2-4 symmetry connections" width="400">
+</p>
+<p align="center"><em>Figure 7: Symmetry Connections</em></p>
+
 
 ---
 
@@ -85,18 +91,18 @@ Symmetry between *V1* and *V2* is quantified using cosine similarity over traini
 ### Impact of Hidden Units  
 Increasing the number of hidden units improves code separation, as shown in `Figure 8`. With 10 hidden units, the minimum Hamming distance approaches the theoretical limit (95% confidence intervals). However, excessive hidden units may lead to overfitting, highlighting the trade-off between separation and generalization.
 
-<figure>
-  <img src="plots&graphics/more_hidden_units.png" alt="hidden units"/>
-  <figcaption>Figure 8: Different numbers of hidden units</figcaption>
-</figure>
+<p align="center">
+  <img src="plots&graphics/more_hidden_units.png" alt="hidden units" width="400">
+</p>
+<p align="center"><em>Figure 8: Different numbers of hidden units</em></p>
 
 ### Robustness of Encodings  
 The network fails with `(+1, -1)` neuron states (common in Hopfield networks) due to interference in the hidden layer. Experiments removing recurrent connections (`Figure 9`) surprisingly show preserved or improved encodings, suggesting hidden units can compensate for missing recurrent links.
 
-<figure>
-  <img src="plots&graphics/recurrent_connections.png" alt="recurrent connections"/>
-  <figcaption>Figure 9: Remove recurrent connections</figcaption>
-</figure>
+<p align="center">
+  <img src="plots&graphics/recurrent_connections.png" alt="recurrent connections" width="400">
+</p>
+<p align="center"><em>Figure 9: Remove recurrent connections</em></p>
 
 ---
 
