@@ -21,7 +21,7 @@ Based on the foundational work by *David H. Ackley, Geoffrey E. Hinton, and Terr
 
 ### The Boltzmann Machine  
 The Boltzmann Machine (BM) is an energy-based stochastic model with recurrent connections and hidden units. Its primary goal is to learn input distributions to generate new data resembling the training set. Training involves minimizing the divergence between the data distribution and the model distribution using a two-phase process: the **Wake phase** (driven by real data) and the **Sleep phase** (driven by "dream" data). This leads to Hebbian-like weight update rules, as shown in the equation:  
-\[ \Delta w_{ij} \propto \left\langle s_i s_j \right\rangle_{\text{data}} - \left\langle s_i s_j \right\rangle_{\text{model}} \]  
+$$ \Delta w_{ij} \propto \langle s_i s_j \rangle_{\text{data}} - \langle s_i s_j \rangle_{\text{model}} $$ 
 
 ### The Encoder Task  
 The 4-2-4 encoder task involves two visible layers (*V1* and *V2*) connected via a hidden layer (*H*), with the goal of ensuring \( V1 = V2 \). The architecture enforces sparse activation, where only one neuron is active per region. This setup mimics efficient communication between brain regions through binary encoding. The structure is visualized in the schematic below (`encoder_architecture.png`), highlighting recurrent connections within visible layers and symmetric encodings to the hidden layer.  
