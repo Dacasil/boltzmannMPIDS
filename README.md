@@ -26,7 +26,7 @@ The Boltzmann Machine (BM) is an energy-based stochastic model with recurrent co
 ### The Encoder Task  
 The 4-2-4 encoder task involves two visible layers (*V1* and *V2*) connected via a hidden layer (*H*), with the goal of ensuring \( V1 = V2 \). The architecture enforces sparse activation, where only one neuron is active per region. This setup mimics efficient communication between brain regions through binary encoding. The structure is visualized in the schematic below, highlighting recurrent connections within visible layers and symmetric encodings to the hidden layer.
 
-<img src="plots&graphics/nodes_model.png" alt="4-2-4 Model" width="400" height="300"/>
+<img src="plots&graphics/nodes_model.png" alt="4-2-4 Model" width="400"/>
 *Figure 2: Wake-sleep training phases*
 
 ---
