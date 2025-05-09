@@ -46,7 +46,7 @@ The implementation of the 4-2-4 encoder uses recursive connectivity plots (`Figu
 <br/>
 
 <p align="center">
-  <img src="plots&graphics/connections_graphic.png" alt="4-2-4 Connections" width="400">
+  <img src="plots&graphics/connections_graphic.png" alt="4-2-4 Connections" width="500">
 </p>
 <p align="center"><em>Figure 3: Model of the connections</em></p>
 
@@ -56,7 +56,7 @@ The implementation of the 4-2-4 encoder uses recursive connectivity plots (`Figu
 Binary encodings are analyzed using Hamming distances, as shown in `Figure 4`. Four distinct encodings emerge: `(11)`, `(10)`, `(01)`, and `(00)` (`Figure 5`). While the theoretical minimum Hamming distance is 1, empirical results (from 50 samples) show imperfect separation due to the stochastic nature of BMs and limited training epochs.
 
 <p align="center">
-  <img src="plots&graphics/binary_encodings_original.png" alt="4-2-4 Binary Encodings" width="600">
+  <img src="plots&graphics/binary_encodings_original.png" alt="4-2-4 Binary Encodings" width="500">
 </p>
 <p align="center"><em>Figure 4: Encoding distances</em></p>
 
