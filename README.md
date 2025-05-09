@@ -1,6 +1,6 @@
 # Learning in Boltzmann Machines
 
-This repository accompanies a presentation on Boltzmann Machines, focusing on the 4-2-4 encoder task, symmetry analysis, and investigations into hidden units and robustness. Below is a detailed overview of the project, including key findings and visualizations.
+This repository investigates Boltzmann Machines, focusing on the 4-2-4 encoder task, symmetry analysis, and investigations into hidden units and robustness. Below is an overview of the project, including key findings and visualizations.
 
 ---
 
