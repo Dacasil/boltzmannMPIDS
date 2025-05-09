@@ -12,7 +12,7 @@ Based on the foundational work by *David H. Ackley, Geoffrey E. Hinton, and Terr
 
 ## Repository Structure  
 - `/plots&graphics`: Contains all figures
-- `Slides`: Original presentation slides.
+- `/Slides`: Original presentation slides.
 
 ---
 
@@ -20,11 +20,14 @@ Based on the foundational work by *David H. Ackley, Geoffrey E. Hinton, and Terr
 
 ### The Boltzmann Machine  
 The Boltzmann Machine (BM) is an energy-based stochastic model with recurrent connections and hidden units. Its primary goal is to learn input distributions to generate new data resembling the training set. Training involves minimizing the divergence between the data distribution and the model distribution using a two-phase process: the **Wake phase** (driven by real data) and the **Sleep phase** (driven by "dream" data). This leads to Hebbian-like weight update rules, as shown in the equation:
-![equation](https://latex.codecogs.com/png.image?\dpi{110}&space;\Delta&space;w_{ij}&space;\propto&space;\langle&space;s_i&space;s_j&space;\rangle_{\text{data}}&space;-&space;\langle&space;s_i&space;s_j&space;\rangle_{\text{model}})
+
  
 
 ### The Encoder Task  
-The 4-2-4 encoder task involves two visible layers (*V1* and *V2*) connected via a hidden layer (*H*), with the goal of ensuring \( V1 = V2 \). The architecture enforces sparse activation, where only one neuron is active per region. This setup mimics efficient communication between brain regions through binary encoding. The structure is visualized in the schematic below (`encoder_architecture.png`), highlighting recurrent connections within visible layers and symmetric encodings to the hidden layer.
+The 4-2-4 encoder task involves two visible layers (*V1* and *V2*) connected via a hidden layer (*H*), with the goal of ensuring \( V1 = V2 \). The architecture enforces sparse activation, where only one neuron is active per region. This setup mimics efficient communication between brain regions through binary encoding. The structure is visualized in the schematic below, highlighting recurrent connections within visible layers and symmetric encodings to the hidden layer.
+
+![4-2-4 Model](plots&graphics/nodes_model.png)  
+*Figure 2: Wake-sleep training phases*
 
 ---
 
