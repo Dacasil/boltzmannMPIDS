@@ -92,7 +92,7 @@ Symmetry between *V1* and *V2* is quantified using cosine similarity over traini
 Increasing the number of hidden units improves code separation, as shown in `Figure 8`. With 10 hidden units, the minimum Hamming distance approaches the theoretical limit (95% confidence intervals). However, excessive hidden units may lead to overfitting, highlighting the trade-off between separation and generalization.
 
 <p align="center">
-  <img src="plots&graphics/more_hidden_units.png" alt="hidden units" width="600">
+  <img src="plots&graphics/more_hidden_units.png" alt="hidden units" width="500">
 </p>
 <p align="center"><em>Figure 8: Different numbers of hidden units</em></p>
 
@@ -100,7 +100,7 @@ Increasing the number of hidden units improves code separation, as shown in `Fig
 The network fails with `(+1, -1)` neuron states (common in Hopfield networks) due to interference in the hidden layer. Experiments removing recurrent connections (`Figure 9`) surprisingly show preserved or improved encodings, suggesting hidden units can compensate for missing recurrent links.
 
 <p align="center">
-  <img src="plots&graphics/recurrent_connections.png" alt="recurrent connections" width="600">
+  <img src="plots&graphics/recurrent_connections.png" alt="recurrent connections" width="500">
 </p>
 <p align="center"><em>Figure 9: Remove recurrent connections</em></p>
 
