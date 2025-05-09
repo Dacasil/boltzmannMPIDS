@@ -1,19 +1,18 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
+
+# import torch.optim as optim
 import numpy as np
 
 
 class BoltzmannMachine(nn.Module):
-    def __init__(
-        self, nv, nh, adjacency_matrix=None, bias=False
-    ):  # CHANGED: Removed mode parameter
+    def __init__(self, nv, nh, adjacency_matrix=None, bias=False):
         super(BoltzmannMachine, self).__init__()
         self.nv = nv  # Number of visible units
         self.nh = nh  # Number of hidden units
         self.bias = bias
         self.n = nv + nh + int(bias)  # Total number of units
-        self.w = nn.Parameter(torch.zeros(self.n, self.n))  # Full weight matrix
+        self.w = nn.Parameter(torch.zeros(self.n, self.n))
         self.inactiveState = 0  # CHANGED: Fixed to binary units (0)
 
         # Compute the default adjacency matrix if none is provided
@@ -76,13 +75,13 @@ class BoltzmannMachine(nn.Module):
 
         # Ensure initial_state matches the size of total_state
         if len(initial_state) < self.n:
-            # Pad initial_state with zeros for hidden units and bias (if applicable)
+            # Pad initial_state with zeros for hidden units and bias
             padding_size = self.n - len(initial_state)
             initial_state = torch.cat((initial_state, torch.zeros(padding_size)))
 
         # Ensure clamping_degree matches the size of total_state
         if len(clamping_degree) < self.n:
-            # Pad clamping_degree with zeros for hidden units and bias (if applicable)
+            # Pad clamping_degree with zeros for hidden units and bias
             padding_size = self.n - len(clamping_degree)
             clamping_degree = torch.cat((clamping_degree, torch.zeros(padding_size)))
 
@@ -105,8 +104,15 @@ class BoltzmannMachine(nn.Module):
         )
 
     def training_step(
-        self, optimizer, data, noise_levels, steps_statistics, annealing_scheme, n_steps,
-        discretize_gradients=False, double_clamped=False #optional
+        self,
+        optimizer,
+        data,
+        noise_levels,
+        steps_statistics,
+        annealing_scheme,
+        n_steps,
+        discretize_gradients=False,
+        double_clamped=False,  # optional
     ):
         nData = len(data)
         optimizer.zero_grad()
@@ -117,7 +123,7 @@ class BoltzmannMachine(nn.Module):
             NoisyV = self.AddNoise(data[i], noise_levels)
             vNoisy = torch.clone(NoisyV)
 
-            clampedUnits = torch.cat((torch.ones(self.nv), torch.zeros(self.nh)))
+            clampedUnits = {torch.cat((torch.ones(self.nv), torch.zeros(self.nh)))}
             if self.bias:
                 clampedUnits = torch.cat(
                     (clampedUnits, torch.tensor([1.0]))
@@ -132,7 +138,7 @@ class BoltzmannMachine(nn.Module):
                 pClampedAvg += self.CollectStatistics(
                     vClamped, hClamped, clampedUnits, steps_statistics, final_T
                 )
-            pClampedAvg = pClampedAvg/n_reps
+            pClampedAvg = pClampedAvg / n_reps
 
             vFree, hFree = self.GoToEquilibriumState(
                 torch.zeros(self.nv),
@@ -178,6 +184,7 @@ class BoltzmannMachine(nn.Module):
             stats += torch.outer(total_state, total_state)
 
         return stats / timeUnits
+
 
 def AdjMat_V1V2_inlayer(n, m, bias):
     # Initialize adjacency matrix
