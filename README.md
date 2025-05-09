@@ -39,15 +39,16 @@ The 4-2-4 encoder task involves two visible layers (*V1* and *V2*) connected via
 The implementation of the 4-2-4 encoder uses recursive connectivity plots (`Figure 2`), where each neuron’s connections mirror the network’s overall structure. Weight matrices (visualized in (`Figure 3`) reveal mirror symmetry between *V1* and *V2*, ensuring consistent activation of hidden units.
 
 <figure>
-  <img src="plots&graphics/new_plot.png" alt="4-2-4 Recursive" width="400"/>
+  <img src="plots&graphics/new_plot.png" alt="4-2-4 Recursive"/>
   <figcaption>Figure 2: Recursive Connectivities inside the 4-2-4 model </figcaption>
 </figure>
+
+
 
 <figure>
   <img src="plots&graphics/connections_graphic.png" alt="4-2-4 Connections" width="400"/>
   <figcaption>Figure 3: Model of the connections</figcaption>
 </figure>
-
 
 
 Binary encodings are analyzed using Hamming distances, as shown in `Figure 4`. Four distinct encodings emerge: `(11)`, `(10)`, `(01)`, and `(00)` (`Figure 5`). While the theoretical minimum Hamming distance is 1, empirical results (from 50 samples) show imperfect separation due to the stochastic nature of BMs and limited training epochs.
