@@ -11,9 +11,8 @@ Based on the foundational work by *David H. Ackley, Geoffrey E. Hinton, and Terr
 ---
 
 ## Repository Structure  
-- `/plots`: Contains all figures referenced in the sections below (to be added).
-- `/data`: Training and testing datasets (if applicable).
-- `presentation_slides.pdf`: Original presentation slides.
+- `/plots&graphics`: Contains all figures
+- `Slides`: Original presentation slides.
 
 ---
 
