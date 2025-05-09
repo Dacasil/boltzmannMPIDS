@@ -22,9 +22,7 @@ Based on the foundational work by *David H. Ackley, Geoffrey E. Hinton, and Terr
 The Boltzmann Machine (BM) is an energy-based stochastic model with recurrent connections and hidden units. Its primary goal is to learn input distributions to generate new data resembling the training set. Training involves minimizing the divergence between the data distribution and the model distribution using a two-phase process: the **Wake phase** (driven by real data) and the **Sleep phase** (driven by "dream" data). This leads to Hebbian-like weight update rules, as shown in the equation:
 
 
-<p align="center">
-  <img src="plots&graphics/formula.png" alt="equation" width="400" style="filter: invert(1);">
-</p>
+<img src="plots&graphics/formula.png" style="filter: invert(1) brightness(1.2);" />
 
  
 
