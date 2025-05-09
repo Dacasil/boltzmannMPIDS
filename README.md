@@ -23,7 +23,7 @@ The Boltzmann Machine (BM) is an energy-based stochastic model with recurrent co
 
 
 <p align="center">
-  <img src="plots&graphics/formula.png" alt="equation" width="400">
+  <img src="plots&graphics/formula.png" alt="equation" width="400" style="filter: invert(1);">
 </p>
 
  
